@@ -1,0 +1,36 @@
+local maxSteerAngle = 45.0 -- maximum steer angle of the wheels
+local maxTorque = 1000.0 -- maximum torque that can be applied to the wheels
+
+function calcSteerAngle(input)
+  return maxSteerAngle * input
+end
+
+function calcTorque(input)
+  return maxTorque * input
+end
+
+function updateCarHandling(vehicle)
+  -- Get the player's input
+  local inputSteer = GetControlNormal(2, INPUT_CONTROL_STANDARD) -- horizontal axis
+  local inputThrottle = GetControlNormal(1, INPUT_CONTROL_STANDARD) -- vertical axis
+  local inputBrake = GetControlNormal(3, INPUT_CONTROL_STANDARD) -- brake/reverse
+
+  local steerAngle = calcSteerAngle(inputSteer)
+  local torque = calcTorque(inputThrottle - inputBrake)
+
+  SetVehicleSteerAngle(vehicle, steerAngle)
+  SetVehicleForwardSpeed(vehicle, torque)
+end
+
+Citizen.CreateThread(function()
+  while true do
+    local ped = GetPlayerPed(-1)
+    local vehicle = GetVehiclePedIsIn(ped, false)
+
+    if DoesEntityExist(vehicle) then
+      updateCarHandling(vehicle)
+    end
+
+    Citizen.Wait(0)
+  end
+end)
